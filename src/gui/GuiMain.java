@@ -12,6 +12,7 @@ import java.util.List;
 import javax.swing.JButton;
 import java.awt.Component;
 import java.util.Date;
+import java.util.Locale;
 import observerapp.JokeListener;
 import observerapp.JokeTeller;
 import observerapp.ListenerVerwaltung;
@@ -376,6 +377,14 @@ public class GuiMain extends javax.swing.JFrame {
      * @param args the command line arguments
      */
     public static void main(String args[]) {
+        if(args.length > 0) {
+            String deutsch = "de";
+            if(args[0].equalsIgnoreCase(deutsch)){
+                Locale.setDefault(Locale.GERMANY);
+            }else {
+                Locale.setDefault(Locale.ENGLISH);
+            }
+        }
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
