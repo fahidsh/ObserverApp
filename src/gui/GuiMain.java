@@ -7,9 +7,14 @@ package gui;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Insets;
-import java.util.Locale;
-import javax.swing.BoxLayout;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.JButton;
+import java.awt.Component;
+import java.util.Date;
+import observerapp.JokeListener;
+import observerapp.JokeTeller;
+import observerapp.ListenerVerwaltung;
 import strings.Language;
 
 /**
@@ -17,6 +22,8 @@ import strings.Language;
  * @author Fahid Shehzad
  */
 public class GuiMain extends javax.swing.JFrame {
+    private JokeTeller jokeTeller;
+    private ListenerVerwaltung jokeListeners = new ListenerVerwaltung();
 
     /**
      * Creates new form GuiMain
@@ -25,33 +32,76 @@ public class GuiMain extends javax.swing.JFrame {
         initComponents();
         lblAnzahlListeners.setText("0");
         this.setLocationRelativeTo(null);
+        aktiviereButtons();
+        protokolliere(Language.getString("PartyStartMessage"));
+        pnlListeners.setLayout(new FlowLayout());
         //Locale.setDefault(Locale.US);
     }
     
     public void protokolliere(String antrag) {
+        taProtokoll.append(getUhrzeit());
+        taProtokoll.append(" - ");
         taProtokoll.append(antrag);
         taProtokoll.append("\n");
     }
     
-    public void addSampleButtons() {
+    public void addSampleButtons(int anzahl) {
+        for(int i=0;i<anzahl;i++){
+            addListenerButton("Listener" + i, String.valueOf(i));
+        }
+    }
+    
+    private void aktiviereButtons(){
+        btnJokeTellerNameFestlegen.setEnabled(jokeTeller==null);
+        txtJokeTellerName.setEnabled(jokeTeller==null);
+        btnWitzErzaehlen.setEnabled(jokeTeller!=null);
+        btnListenerAnmelden.setEnabled(jokeTeller!=null);
+    }
+    
+    public void aktualisiereOberflaeche(){
+        aktiviereButtons();
+        reloadListeners();
+    }
+    
+    protected void removeListener(int id) {
+        protokolliere(jokeListeners.get(id).getName() + Language.getString("ListenerRemovedMessage"));
+        jokeListeners.removeListener(id);
+        aktualisiereOberflaeche();
+    }
+    public String getUhrzeit() {
+        String format = "HH:mm:ss";
+        return new java.text.SimpleDateFormat(format)
+                .format(new java.util.Date(System.currentTimeMillis()));
+    }
+    
+    public void reloadListeners() {
+        //Component[] components = pnlListeners.getComponents();
+        pnlListeners.removeAll();
+        int id = 0;
+        for(JokeListener jokeListener : jokeListeners.getAllListeners()) {
+            addListenerButton(jokeListener.getName(), String.valueOf(id));
+            id++;
+        }
+        pnlListeners.revalidate();
+        spListeners.revalidate();
+    }
+    
+    private void addListenerButton(String name, String id) {
         int btnWidth = 120;
         int btnHeight = 70;
-        int diff = 10;
         int btnMargin[] = {5, 5, 5, 5};
         
-        pnlListeners.setLayout(new FlowLayout());
-        for(int i=0;i<20;i++){
-            JButton button = new JButton("Zuhörer " + i);
-            button.setMinimumSize(new Dimension(btnWidth, btnHeight));
-            button.setPreferredSize(new Dimension(btnWidth, btnHeight));
-            button.setMargin(new Insets(
-                    btnMargin[0], btnMargin[1], 
-                    btnMargin[2], btnMargin[3]));
-            
-            button.setName("btnSub"+i);
-            button.addActionListener(new ListenerButtonActionController(this));
-            pnlListeners.add(button);
-        }
+        JButton button = new JButton(name);
+        button.setName(id);
+
+        button.setMinimumSize(new Dimension(btnWidth, btnHeight));
+        button.setPreferredSize(new Dimension(btnWidth, btnHeight));
+        button.setMargin(new Insets(
+                btnMargin[0], btnMargin[1], 
+                btnMargin[2], btnMargin[3]));
+
+        button.addActionListener(new ListenerButtonActionController(this));
+        pnlListeners.add(button);
     }
 
     /**
@@ -80,7 +130,7 @@ public class GuiMain extends javax.swing.JFrame {
         jLabel5 = new javax.swing.JLabel();
         txtListenerName = new javax.swing.JTextField();
         btnListenerAnmelden = new javax.swing.JButton();
-        jScrollPane2 = new javax.swing.JScrollPane();
+        spListeners = new javax.swing.JScrollPane();
         pnlListeners = new javax.swing.JPanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -110,6 +160,12 @@ public class GuiMain extends javax.swing.JFrame {
 
         jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(bundle.getString("JokeTeller"))); // NOI18N
 
+        txtJokeTellerName.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtJokeTellerNameActionPerformed(evt);
+            }
+        });
+
         jLabel2.setText(bundle.getString("LabelName")); // NOI18N
 
         lblAnzahlListeners.setText("jLabel4");
@@ -117,8 +173,18 @@ public class GuiMain extends javax.swing.JFrame {
         jLabel3.setText(bundle.getString("LabelAnzahlListeners")); // NOI18N
 
         btnJokeTellerNameFestlegen.setText(bundle.getString("ButtonSetJokeTellerName")); // NOI18N
+        btnJokeTellerNameFestlegen.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnJokeTellerNameFestlegenActionPerformed(evt);
+            }
+        });
 
         btnWitzErzaehlen.setText(bundle.getString("ButtonTellJoke")); // NOI18N
+        btnWitzErzaehlen.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnWitzErzaehlenActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -156,7 +222,7 @@ public class GuiMain extends javax.swing.JFrame {
                     .addComponent(btnJokeTellerNameFestlegen)
                     .addComponent(btnWitzErzaehlen))
                 .addGap(32, 32, 32)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel3)
                     .addComponent(lblAnzahlListeners))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -166,7 +232,18 @@ public class GuiMain extends javax.swing.JFrame {
 
         jLabel5.setText(bundle.getString("LabelName")); // NOI18N
 
+        txtListenerName.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtListenerNameActionPerformed(evt);
+            }
+        });
+
         btnListenerAnmelden.setText(bundle.getString("ButtonJoin")); // NOI18N
+        btnListenerAnmelden.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnListenerAnmeldenActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel6Layout = new javax.swing.GroupLayout(jPanel6);
         jPanel6.setLayout(jPanel6Layout);
@@ -226,7 +303,7 @@ public class GuiMain extends javax.swing.JFrame {
             .addGap(0, 135, Short.MAX_VALUE)
         );
 
-        jScrollPane2.setViewportView(pnlListeners);
+        spListeners.setViewportView(pnlListeners);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -235,7 +312,7 @@ public class GuiMain extends javax.swing.JFrame {
             .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane2)
+                .addComponent(spListeners)
                 .addContainerGap())
             .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -247,7 +324,7 @@ public class GuiMain extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 119, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(spListeners, javax.swing.GroupLayout.PREFERRED_SIZE, 119, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
@@ -255,6 +332,45 @@ public class GuiMain extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void btnJokeTellerNameFestlegenActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnJokeTellerNameFestlegenActionPerformed
+        // TODO add your handling code here:
+        String jokeTellerName = txtJokeTellerName.getText();
+        if(jokeTellerName.length() < 2) { return; }
+        jokeTeller = new JokeTeller(jokeTellerName);
+        jokeTeller.setGui(this);
+        protokolliere(jokeTellerName + Language.getString("JokeTellerSetMessage"));
+        aktualisiereOberflaeche();
+    }//GEN-LAST:event_btnJokeTellerNameFestlegenActionPerformed
+
+    private void btnListenerAnmeldenActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnListenerAnmeldenActionPerformed
+        // TODO add your handling code here:
+        String listenerName = txtListenerName.getText();
+        if(listenerName.length() < 2) { return; }
+        JokeListener listener = new JokeListener(listenerName);
+        listener.setGui(this);
+        if(jokeListeners.addListener(listener)){
+            protokolliere(listenerName + Language.getString("ListerJoinMessage"));
+            txtListenerName.setText("");
+            jokeTeller.addObserver(listener);
+        }
+        aktualisiereOberflaeche();
+    }//GEN-LAST:event_btnListenerAnmeldenActionPerformed
+
+    private void txtJokeTellerNameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtJokeTellerNameActionPerformed
+        // TODO add your handling code here:
+        btnJokeTellerNameFestlegen.doClick();
+    }//GEN-LAST:event_txtJokeTellerNameActionPerformed
+
+    private void txtListenerNameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtListenerNameActionPerformed
+        // TODO add your handling code here:
+        btnListenerAnmelden.doClick();
+    }//GEN-LAST:event_txtListenerNameActionPerformed
+
+    private void btnWitzErzaehlenActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnWitzErzaehlenActionPerformed
+        // TODO add your handling code here:
+        jokeTeller.tellJoke();
+    }//GEN-LAST:event_btnWitzErzaehlenActionPerformed
 
     /**
      * @param args the command line arguments
@@ -304,10 +420,10 @@ public class GuiMain extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel6;
-    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JLabel lblAnzahlListeners;
     private javax.swing.JPanel pnlListeners;
+    private javax.swing.JScrollPane spListeners;
     private javax.swing.JTextArea taProtokoll;
     private javax.swing.JTextField txtJokeTellerName;
     private javax.swing.JTextField txtListenerName;

@@ -4,8 +4,6 @@
  */
 package strings;
 
-import java.util.Enumeration;
-import java.util.Locale;
 import java.util.ResourceBundle;
 
 /**
@@ -17,7 +15,6 @@ public class Language {
     private static ResourceBundle language = ResourceBundle.getBundle(LANGUAGE_RESOURCE_PFAD);
     
     public static String getString(String key) {
-        System.out.println(language.getBaseBundleName());
         String value = null;
         if(!language.containsKey(key)) {
             value = language.getString("StringNotFound");

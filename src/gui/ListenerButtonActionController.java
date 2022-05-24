@@ -7,6 +7,8 @@ package gui;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JButton;
+import javax.swing.JOptionPane;
+import strings.Language;
 
 /**
  *
@@ -25,7 +27,22 @@ public class ListenerButtonActionController implements ActionListener{
         if(gui == null){ return; };
         
         JButton pressedButton = (JButton) e.getSource();
-        System.out.println(pressedButton.getName());
+        String listenerName = pressedButton.getActionCommand();
+        int listenerId = Integer.parseInt(pressedButton.getName());
+        
+        String message = Language.getString("ListenerRemoveConfirmation")
+                .replace("_Listener_", listenerName);
+        
+        int bestaetigung = JOptionPane.showConfirmDialog(
+                gui, 
+                message, 
+                Language.getString("Confirmation"), 
+                JOptionPane.YES_NO_OPTION);
+        
+        // Ja/Yes ist = 0
+        if(bestaetigung == 0){
+            gui.removeListener(listenerId);
+        }
     }
     
 }

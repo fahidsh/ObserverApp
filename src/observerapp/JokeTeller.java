@@ -4,15 +4,27 @@
  */
 package observerapp;
 import ObserverNT.ObservableNT;
+import gui.GuiMain;
 import java.util.List;
 import java.util.Arrays;
 import java.util.Collections;
+import strings.Language;
 
 /**
  *
  * @author Fahid Shehzad
  */
 public class JokeTeller extends ObservableNT{
+    
+    private String name = "";
+    
+    public JokeTeller(){}
+    public JokeTeller(String name) { this.name = name; }
+    
+    GuiMain gui;
+    public void setGui(GuiMain gui) {
+        this.gui = gui;
+    }
     
     private static final List<String> jokes = Arrays.asList(
         "Sorry, aber du siehst so aus, wie ich mich fühle.",
@@ -31,9 +43,19 @@ public class JokeTeller extends ObservableNT{
     );
     
     public void tellJoke() {
-        setChanged();
+        //setChanged();
         Collections.shuffle(jokes);
+        
+        if(gui != null) {
+            String protokolAntrang = "";
+            protokolAntrang += (name.equals("")) ? Language.getString("JokeTeller") : name;
+            protokolAntrang += Language.getString("JokeTellMessage");
+            protokolAntrang += "\n\t";
+            protokolAntrang += jokes.get(0);
+            gui.protokolliere(protokolAntrang);
+        }
+        
         notifyObservers("Witz", null, jokes.get(0));
     }
-
+    
 }
