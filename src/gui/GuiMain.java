@@ -7,11 +7,7 @@ package gui;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Insets;
-import java.util.ArrayList;
-import java.util.List;
 import javax.swing.JButton;
-import java.awt.Component;
-import java.util.Date;
 import java.util.Locale;
 import observerapp.JokeListener;
 import observerapp.JokeTeller;
@@ -66,6 +62,7 @@ public class GuiMain extends javax.swing.JFrame {
     
     protected void removeListener(int id) {
         protokolliere(jokeListeners.get(id).getName() + Language.getString("ListenerRemovedMessage"));
+        jokeTeller.deleteObserver(jokeListeners.get(id));
         jokeListeners.removeListener(id);
         aktualisiereOberflaeche();
     }
@@ -351,7 +348,7 @@ public class GuiMain extends javax.swing.JFrame {
         JokeListener listener = new JokeListener(listenerName);
         listener.setGui(this);
         if(jokeListeners.addListener(listener)){
-            protokolliere(listenerName + Language.getString("ListerJoinMessage"));
+            protokolliere(listenerName + Language.getString("ListeenerJoinMessage"));
             txtListenerName.setText("");
             jokeTeller.addObserver(listener);
         }
